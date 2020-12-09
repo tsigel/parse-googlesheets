@@ -1,0 +1,64 @@
+{
+  "name": "parse-googlesheets",
+  "version": "1.0.0",
+  "description": "Parse google sheets",
+  "main": "dist/parse-googlesheets.min.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "test": "npx jest",
+    "build": "npx tsc && npx webpack",
+    "prepublish": "npm run test",
+    "postversion": "npm publish",
+    "postpublish": "git push"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsigel/parse-googlesheets.git"
+  },
+  "keywords": [
+    "googlesheets",
+    "parse"
+  ],
+  "author": "tsddaniil@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tsigel/parse-googlesheets/issues"
+  },
+  "homepage": "https://github.com/tsigel/parse-googlesheets#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.18",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.4.4",
+    "ts-loader": "^8.0.11",
+    "typescript": "^4.1.2",
+    "webpack": "^5.10.0",
+    "webpack-cli": "^4.2.0"
+  },
+  "dependencies": {
+    "@types/node-fetch": "^2.5.7",
+    "node-fetch": "^2.6.1"
+  },
+  "jest": {
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    },
+    "testMatch": [
+      "**/test/*spec.+(ts)",
+      "**/test/**/*spec.+(ts)"
+    ]
+  }
+}
