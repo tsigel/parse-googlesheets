@@ -38,10 +38,7 @@
     "webpack": "^5.10.0",
     "webpack-cli": "^4.2.0"
   },
-  "dependencies": {
-    "@types/node-fetch": "^2.5.7",
-    "node-fetch": "^2.6.1"
-  },
+  "dependencies": {},
   "jest": {
     "collectCoverage": true,
     "coveragePathIgnorePatterns": [

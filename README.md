@@ -19,7 +19,7 @@ const schema = {
 
 const myData = parseGoogleSheets(schema, googlesheets);
 ```
-Where `googlesheets` - data from REST API from google sheets.
+Where `googlesheets` - data from [REST API](https://www.freecodecamp.org/news/cjn-google-sheets-as-json-endpoint/) from google sheets.
 
 This example for sheets like this:
 
