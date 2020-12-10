@@ -1,3 +1,5 @@
+import { request } from './request';
+
 export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsResponse): Array<Row<T>> => {
     const rows = data.feed.entry.reduce<Array<Array<string>>>((acc: Array<Array<string>>, item) => {
         const row = Number(item['gs$cell'].row);
@@ -16,13 +18,13 @@ export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsRespo
     const dictionary = Object.entries(schema);
 
     const indexMap = headLine.reduce((acc: Record<string, { index: number; type: 'string' | 'number' }>, sheetsColumnName, index) => {
-         const [dataName, { type }] = dictionary.find(([key, { columnName }]) => columnName.toLowerCase() === sheetsColumnName.trim().toLowerCase()) ?? [undefined, { type: undefined }];
+        const [dataName, { type }] = dictionary.find(([key, { columnName }]) => columnName.toLowerCase() === sheetsColumnName.trim().toLowerCase()) ?? [undefined, { type: undefined }];
 
-         if (dataName && type) {
-             acc[dataName] = { index, type };
-         }
+        if (dataName && type) {
+            acc[dataName] = { index, type };
+        }
 
-         return acc;
+        return acc;
     }, Object.create(null));
 
     const toNumber = (value: string): number | undefined => isNaN(Number(value)) ? undefined : Number(value);
@@ -34,6 +36,10 @@ export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsRespo
     }, Object.create(null)));
 };
 
+export const loadGoogleSheets = (SheetId: string, schema: any, SheetListNumber: number = 1) =>
+    request(`https://spreadsheets.google.com/feeds/cells/${SheetId}/${SheetListNumber}/public/full?alt=json`)
+        .then(r => r.json())
+        .then(sheets => parseGoogleSheets(schema, sheets));
 
 type FieldData = {
     type: 'string' | 'number';
