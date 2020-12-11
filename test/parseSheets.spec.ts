@@ -1,51 +1,51 @@
-import { parseGoogleSheets } from '../src';
+import { number, parseGoogleSheets, string } from '../src';
 import { data } from './data';
 
 describe('Google sheets parse', () => {
 
     const schema = {
         fileName: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'filename'
         },
         projectName: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'project'
         },
         year: {
-            type: 'number' as 'number',
+            parse: number,
             columnName: 'YY'
         },
         videoLinkText: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'menu'
         },
         youtubeVideoId: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'YT'
         },
         pageTitle: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'header'
         },
         pageText: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'sub header'
         },
         pageDateText: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'date'
         },
         pageLinkUrl: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'url'
         },
         facebookId: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'FB'
         },
         playListId: {
-            type: 'string' as 'string',
+            parse: string,
             columnName: 'PLAYLIST'
         }
     };

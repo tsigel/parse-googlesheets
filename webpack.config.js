@@ -1,5 +1,5 @@
-const webpack = require('webpack');
 const { resolve, join } = require('path');
+const webpack = require('webpack');
 
 const getGeneralConfig = (minimize) => ({
     module: {
@@ -13,6 +13,10 @@ const getGeneralConfig = (minimize) => ({
                     }
                 },
                 exclude: /node_modules/,
+            },
+            {
+                test: /\.js$/,
+                exclude: /node_modules/
             }
         ],
     },
@@ -22,6 +26,7 @@ const getGeneralConfig = (minimize) => ({
     },
     mode: minimize ? "production" : "development",
     devtool: minimize ? 'source-map' : "inline-source-map",
+    target: 'node'
 })
 
 const build = (minimize) => ({
@@ -30,6 +35,11 @@ const build = (minimize) => ({
     optimization: {
         minimize,
     },
+    plugins: [
+        new webpack.IgnorePlugin({
+            resourceRegExp: /node-fetch/
+        })
+    ],
     output: {
         libraryTarget: "umd",
         globalObject: "this",
