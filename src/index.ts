@@ -1,3 +1,29 @@
+import { request } from './request';
+
+const ifElse = <T>(expression: Func<[T], boolean>, onTrue: Func<[T], any>, onFalse: Func<[T], any>) =>
+    (data: T) => expression(data)
+        ? onTrue(data)
+        : onFalse(data);
+const isNil = (data: any): data is (null | undefined) =>
+    data === null || data === undefined;
+const always = <T>(data: T): Func<[], T> => (): T => data;
+const identity = <T>(data: T): T => data;
+const toNumberOrNil = (value: string | undefined) => isNaN(Number(value))
+    ? undefined
+    : Number(value);
+
+export const string: (data: string | undefined) => string | undefined = ifElse(
+    isNil,
+    always(undefined),
+    identity
+);
+
+export const number: (data: string | undefined) => number | undefined = ifElse(
+    isNil,
+    always(undefined),
+    toNumberOrNil
+);
+
 export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsResponse): Array<Row<T>> => {
     const rows = data.feed.entry.reduce<Array<Array<string>>>((acc: Array<Array<string>>, item) => {
         const row = Number(item['gs$cell'].row);
@@ -15,37 +41,41 @@ export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsRespo
     const headLine = rows[0];
     const dictionary = Object.entries(schema);
 
-    const indexMap = headLine.reduce((acc: Record<string, { index: number; type: 'string' | 'number' }>, sheetsColumnName, index) => {
-         const [dataName, { type }] = dictionary.find(([key, { columnName }]) => columnName.toLowerCase() === sheetsColumnName.trim().toLowerCase()) ?? [undefined, { type: undefined }];
+    const indexMap = headLine.reduce((acc: Record<string, { index: number; parse: Func<[string], any> }>, sheetsColumnName, index) => {
+        const [dataName, { parse }] = dictionary.find(([key, { columnName }]) => columnName.toLowerCase() === sheetsColumnName.trim().toLowerCase()) ?? [undefined, { type: undefined }];
 
-         if (dataName && type) {
-             acc[dataName] = { index, type };
-         }
+        if (dataName && parse) {
+            acc[dataName] = { index, parse };
+        }
 
-         return acc;
+        return acc;
     }, Object.create(null));
 
-    const toNumber = (value: string): number | undefined => isNaN(Number(value)) ? undefined : Number(value);
-
-    return rows.slice(1).map((row) => Object.entries(indexMap).reduce<Row<T>>((acc, [key, { index, type }]: [string, any]) => {
-        // @ts-ignore
-        acc[key] = type === 'string' ? row[index] : toNumber(row[index]);
+    return rows.slice(1).map((row) => Object.entries(indexMap).reduce<Row<T>>((acc, [key, {
+        index,
+        parse
+    }]: [keyof T, { index: number; parse: Func<[string], any> }]) => {
+        acc[key] = parse(row[index]);
         return acc;
     }, Object.create(null)));
 };
 
+export const loadGoogleSheets = <T extends Schema>(schema: T, SheetId: string, SheetListNumber: number = 1): Promise<Array<Row<T>>> =>
+    request(`https://spreadsheets.google.com/feeds/cells/${SheetId}/${SheetListNumber}/public/full?alt=json`)
+        .then<SheetsResponse>(r => r.ok ? r.json() : r.text().then(message => Promise.reject(message)))
+        .then(sheets => parseGoogleSheets<T>(schema, sheets));
 
 type FieldData = {
-    type: 'string' | 'number';
+    parse: Func<[string | undefined], any>;
     columnName: string;
 }
 
-type Schema = {
+export type Schema = {
     [Key: string]: FieldData;
 }
 
-type Row<T extends Schema> = {
-    [Key in keyof T]?: T[Key]['type'] extends 'string' ? string : number;
+export type Row<T extends Schema> = {
+    [Key in keyof T]: ReturnType<T[Key]['parse']>;
 }
 
 type SheetsResponse = {
@@ -61,3 +91,5 @@ type SheetsResponse = {
         }>
     }
 }
+
+type Func<Arguments extends Array<any>, Return> = (...args: Arguments) => Return;
