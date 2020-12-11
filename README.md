@@ -4,15 +4,15 @@
 #### example
 
 ```typescript
-import { parseGoogleSheets } from 'parse-googlesheets';
+import { parseGoogleSheets, number, string } from 'parse-googlesheets';
 
 const schema = {
     dataProperty1: {
-        type: 'string' as 'string',
+        parse: string,
         columnName: 'Column name 1'
     },
     dataProperty2: {
-        type: 'number' as 'number',
+        parse: number,
         columnName: 'Column name 2'
     }
 };

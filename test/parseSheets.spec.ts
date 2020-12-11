@@ -1,4 +1,4 @@
-import { number, parseGoogleSheets, string } from '../src';
+import { parseGoogleSheets, number, string } from '../src';
 import { data } from './data';
 
 describe('Google sheets parse', () => {
