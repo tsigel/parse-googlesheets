@@ -1,6 +1,6 @@
 {
   "name": "parse-googlesheets",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Parse google sheets",
   "main": "dist/parse-googlesheets.min.js",
   "types": "dist/index.d.ts",
