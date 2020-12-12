@@ -36,9 +36,6 @@ const build = (minimize) => ({
         minimize,
     },
     plugins: [
-        new webpack.IgnorePlugin({
-            resourceRegExp: /node-fetch/
-        })
     ],
     output: {
         libraryTarget: "umd",
