@@ -6,8 +6,11 @@ const ifElse = <T>(expression: Func<[T], boolean>, onTrue: Func<[T], any>, onFal
         : onFalse(data);
 const isNil = (data: any): data is (null | undefined) =>
     data === null || data === undefined;
+
 const always = <T>(data: T): Func<[], T> => (): T => data;
+
 const identity = <T>(data: T): T => data;
+
 const toNumberOrNil = (value: string | undefined) => isNaN(Number(value))
     ? undefined
     : Number(value);
@@ -23,6 +26,22 @@ export const number: (data: string | undefined) => number | undefined = ifElse(
     always(undefined),
     toNumberOrNil
 );
+
+export const required = <T extends Func<[any], any>>(func: T): (param: Parameters<T>[0]) => ReturnType<T> extends infer R ? R extends undefined ? never : R : never => (param) => {
+    const result = func(param);
+    if (result === undefined) {
+        throw new Error('Value is empty!');
+    }
+    return result;
+};
+
+export const defaultTo = <T extends Func<[any], any>, D extends ReturnType<T>>(func: T, def: D): (param: Parameters<T>[0]) => ReturnType<T> extends infer R ? R extends undefined ? D : R : never => (param) => {
+    const result = func(param);
+    if (result === undefined) {
+        return def;
+    }
+    return result;
+};
 
 export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsResponse): Array<Row<T>> => {
     const rows = data.feed.entry.reduce<Array<Array<string>>>((acc: Array<Array<string>>, item) => {
