@@ -15,6 +15,13 @@ const toNumberOrNil = (value: string | undefined) => isNaN(Number(value))
     ? undefined
     : Number(value);
 
+const toBooleanOrNil = (value: string | undefined) =>
+    (value === 'true' || value === '1')
+        ? true
+        : (value === 'false' || value === '0')
+        ? false
+        : undefined;
+
 export const string: (data: string | undefined) => string | undefined = ifElse(
     isNil,
     always(undefined),
@@ -25,6 +32,12 @@ export const number: (data: string | undefined) => number | undefined = ifElse(
     isNil,
     always(undefined),
     toNumberOrNil
+);
+
+export const boolean: (data: string | undefined) => boolean | undefined = ifElse(
+    isNil,
+    always(undefined),
+    toBooleanOrNil
 );
 
 export const required = <T extends Func<[any], any>>(func: T): (param: Parameters<T>[0]) => ReturnType<T> extends infer R ? R extends undefined ? never : R : never => (param) => {
