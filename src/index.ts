@@ -4,6 +4,7 @@ const ifElse = <T>(expression: Func<[T], boolean>, onTrue: Func<[T], any>, onFal
     (data: T) => expression(data)
         ? onTrue(data)
         : onFalse(data);
+
 const isNil = (data: any): data is (null | undefined) =>
     data === null || data === undefined;
 
@@ -16,11 +17,15 @@ const toNumberOrNil = (value: string | undefined) => isNaN(Number(value))
     : Number(value);
 
 const toBooleanOrNil = (value: string | undefined) =>
-    (value === 'true' || value === '1')
+    ['true', '1'].includes(value?.toLocaleLowerCase() || '')
         ? true
-        : (value === 'false' || value === '0')
-        ? false
-        : undefined;
+        : ['false', '0'].includes(value?.toLocaleLowerCase() || '')
+            ? false
+            : undefined;
+
+export const toDateOrNil = (pattern: string) => (dateToParse: string | undefined) => {
+    return dateToParse ? date(pattern)(dateToParse) : undefined;
+};
 
 export const string: (data: string | undefined) => string | undefined = ifElse(
     isNil,
@@ -40,6 +45,12 @@ export const boolean: (data: string | undefined) => boolean | undefined = ifElse
     toBooleanOrNil
 );
 
+export const date: (pattern: string) => (date: string | undefined) => string | undefined = (pattern: string) => ifElse(
+    isNil,
+    always(undefined),
+    toDateOrNil(pattern)
+);
+
 export const required = <T extends Func<[any], any>>(func: T): (param: Parameters<T>[0]) => ReturnType<T> extends infer R ? R extends undefined ? never : R : never => (param) => {
     const result = func(param);
     if (result === undefined) {
@@ -57,18 +68,7 @@ export const defaultTo = <T extends Func<[any], any>, D extends ReturnType<T>>(f
 };
 
 export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsResponse): Array<Row<T>> => {
-    const rows = data.feed.entry.reduce<Array<Array<string>>>((acc: Array<Array<string>>, item) => {
-        const row = Number(item['gs$cell'].row);
-        const cell = Number(item['gs$cell'].col);
-
-        if (!acc[row]) {
-            acc[row] = [];
-        }
-
-        acc[row][cell] = item.content.$t;
-
-        return acc;
-    }, []).filter((rows: Array<string>) => rows.filter(item => !!item));
+    const rows = data.values;
 
     const headLine = rows[0];
     const dictionary = Object.entries(schema);
@@ -92,8 +92,8 @@ export const parseGoogleSheets = <T extends Schema>(schema: T, data: SheetsRespo
     }, Object.create(null)));
 };
 
-export const loadGoogleSheets = <T extends Schema>(schema: T, SheetId: string, SheetListNumber: number = 1): Promise<Array<Row<T>>> =>
-    request(`https://spreadsheets.google.com/feeds/cells/${SheetId}/${SheetListNumber}/public/full?alt=json`)
+export const loadGoogleSheets = <T extends Schema>(schema: T, Range: string, SheetId: string, apiKey: string): Promise<Array<Row<T>>> =>
+    request(`https://sheets.googleapis.com/v4/spreadsheets/${SheetId}/values/${Range}?key=${apiKey}`)
         .then<SheetsResponse>(r => r.ok ? r.json() : r.text().then(message => Promise.reject(message)))
         .then(sheets => parseGoogleSheets<T>(schema, sheets));
 
@@ -111,17 +111,9 @@ export type Row<T extends Schema> = {
 }
 
 type SheetsResponse = {
-    feed: {
-        entry: Array<{
-            'gs$cell': {
-                row: string,
-                col: string
-            };
-            content: {
-                '$t': string;
-            }
-        }>
-    }
+    range: string;
+    majorDimension: string;
+    values: Array<Array<string>>;
 }
 
 type Func<Arguments extends Array<any>, Return> = (...args: Arguments) => Return;
