@@ -37,9 +37,6 @@ const build = (minimize) => ({
     },
     plugins: [
     ],
-    externals: {
-        'node-fetch': 'node-fetch'
-    },
     output: {
         libraryTarget: "umd",
         globalObject: "this",
