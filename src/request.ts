@@ -1,10 +1,9 @@
 import * as http from 'http';
 
-const getContext = (function () {
+const getContext = (function (root) {
+    return (): any => typeof window === 'undefined' ? root : window;
     // @ts-ignore
-    const self = this;
-    return (): any => self;
-})();
+})(this);
 
 const getNodeRequest = (): FetchLike => {
     const makeRequest = (url: string): Promise<http.IncomingMessage> => {
@@ -55,8 +54,8 @@ const getNodeRequest = (): FetchLike => {
 const context = getContext();
 
 export const request: FetchLike =
-    context && typeof context.fetch !== undefined
-        ? context.fetch as FetchLike
+    context && typeof context.fetch !== 'undefined'
+        ? context.fetch.bind(context) as FetchLike
         : getNodeRequest();
 
 type Response = {
